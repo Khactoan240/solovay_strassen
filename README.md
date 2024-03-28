@@ -1,6 +1,6 @@
 # Solovay-Strassen Prime Test
 
-![Solovay-Strassen Prime Test](link_to_your_image)
+![Solovay-Strassen Prime Test](https://www.google.com/search?sca_esv=289e373ce865c05a&sxsrf=ACQVn0-FVWPmynU48uIxAkaDKYoQHe-8kg:1711611723133&q=solovay+strassen&tbm=isch&source=lnms&prmd=ivnsbtz&sa=X&ved=2ahUKEwiUroDGupaFAxV8lFYBHb_-AdgQ0pQJegQIChAB&biw=2124&bih=1035&dpr=0.9#imgrc=DvUq4V260wOrrM)
 
 ## Introduction
 
