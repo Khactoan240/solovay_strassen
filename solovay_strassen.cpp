@@ -11,6 +11,7 @@
 #include <ctime>
 #include <time.h>
 #include <chrono>
+#include <iomanip>
 
 using namespace std::chrono;
 using namespace std;
@@ -157,7 +158,7 @@ int test_one_numbers()
 }
 
 
-void benchmark()
+void benchmark(int k)
 {
    cout << "Benchmarking... " << flush;
 
@@ -183,13 +184,14 @@ void benchmark()
    long long prime = stoll(line);
 
    // benchmark
+   cout << endl;
    while (checking_number < max_check_number)
    {
       checking_number++;
       total_test++;
 
       auto start_clock = high_resolution_clock::now();
-      bool is_checking_number_prime = Solovay(checking_number, 9);
+      bool is_checking_number_prime = Solovay(checking_number, k);
       auto end_clock = high_resolution_clock::now();
 
       // Calculate miller-rabin runtime (ms)
@@ -198,6 +200,8 @@ void benchmark()
       // check if miller-rabin return correct output
       if ((is_checking_number_prime && checking_number == prime) || (!is_checking_number_prime && checking_number != prime))
          total_correct_output++;
+    //   else
+    //      cout << checking_number << ", ";
 
       // update new prime in file
       if ((checking_number >= prime) && getline(file, line))
@@ -213,7 +217,7 @@ void benchmark()
    }
 
    file.close();
-
+   cout << endl;
    cout << "Done !" << endl
         << endl;
 
@@ -226,11 +230,122 @@ void benchmark()
    cout << "[>] Average correct: " << float(total_correct_output) / total_test * 100 << "%" << endl;
 }
 
+template <typename T>
+long double average(T arr[], long long size)
+{
+   long double sum = 0.0;
+
+   // Calculate sum of all elements
+   for (long long i = 0; i < size; ++i)
+      sum += arr[i];
+
+   // Calculate average
+   return sum / size;
+}
+
+void benchmark_v2(int number_of_benchmark_round, int k_loop)
+{
+
+   double total_benchmark_runtime = 0;
+   double total_runtime[number_of_benchmark_round];
+   long long total_test[number_of_benchmark_round];
+   long long total_correct_output[number_of_benchmark_round];
+
+   cout << "================[ BENCHMARK ]=================" << endl;
+   cout << "                     ***" << endl;
+
+   // run round benchmark
+   int round = 0;
+   while (round < number_of_benchmark_round)
+   {
+      cout << "[+] Benchmarking round <" << round + 1 << ">..." << flush;
+
+      total_runtime[round] = 0;
+      total_test[round] = 0;
+      total_correct_output[round] = 0;
+
+      long long checking_number = 0;
+      long long max_check_number = 1000000000;
+      string datasets_file = "./dataset/billion-primes.txt";
+
+      // open datasets file
+      ifstream file(datasets_file);
+
+      if (!file.is_open())
+      {
+         cout << "[!] Datasets file does not exist." << endl;
+         file.close();
+         return;
+      }
+
+      string line;
+      getline(file, line);
+      long long prime = stoll(line);
+
+      // benchmark
+      auto start_benchmark_clock = high_resolution_clock::now();
+      while (checking_number < max_check_number)
+      {
+         checking_number++;
+         total_test[round]++;
+
+         auto start_testing_clock = high_resolution_clock::now();
+         bool is_checking_number_prime = Solovay(checking_number, k_loop);
+         auto end_testing_clock = high_resolution_clock::now();
+
+         // Calculate miller-rabin runtime (ms)
+         duration<double, milli> testing_runtime = end_testing_clock - start_testing_clock;
+
+         // check if miller-rabin return correct output
+         if ((is_checking_number_prime && checking_number == prime) || (!is_checking_number_prime && checking_number != prime))
+            total_correct_output[round]++;
+
+         // update new prime in file
+         if ((checking_number >= prime) && getline(file, line))
+            prime = stoll(line);
+
+         total_runtime[round] += testing_runtime.count();
+      }
+
+      auto end_benchmark_clock = high_resolution_clock::now();
+
+      // Calculate benchmark runtime (ms) of round round
+      duration<double, milli> benchmark_runtime = end_benchmark_clock - start_benchmark_clock;
+      total_benchmark_runtime += benchmark_runtime.count();
+
+      cout << fixed << setprecision(6) << "Done! - Run in " << benchmark_runtime.count() << " (ms)" << endl;
+
+      file.close();
+
+      round++;
+   }
+
+   long double avg_total_test = average(total_test, number_of_benchmark_round);
+   long double avg_total_correct_output = average(total_correct_output, number_of_benchmark_round);
+   long double avg_total_runtime = average(total_runtime, number_of_benchmark_round);
+
+   cout << "----------------------------------------------" << endl;
+   cout << "Total runtime for " << number_of_benchmark_round << " benchmark rounds: " << total_benchmark_runtime << " (ms)" << endl;
+
+   cout << "\n================[ STATISTICS ]================" << endl;
+   cout << "            *** Average result ***" << endl;
+   cout << "ROUND" << endl;
+   cout << fixed << setprecision(0) << "[+] Total test     : " << avg_total_test << endl;
+   cout << fixed << setprecision(0) << "[+] Total correct  : " << avg_total_correct_output << endl;
+   cout << fixed << setprecision(6) << "[+] Total runtime  : " << avg_total_runtime << " (ms)" << endl;
+   cout << "----------------------------------------------" << endl;
+
+   cout << "ALGORITHM" << endl;
+   cout << fixed << setprecision(6) << "[+] Average runtime: " << float(avg_total_runtime) / avg_total_test << " (ms)" << endl;
+   cout << fixed << setprecision(6) << "[+] Average correct: " << float(avg_total_correct_output) / avg_total_test * 100 << "%" << endl;
+}
+
 //main
 int main(){
-
+    int k = 3;
+    cout << k <<endl;
     srand(time(NULL));
-    benchmark();
+    benchmark_v2(20,k);
     return 0;
 
 }
